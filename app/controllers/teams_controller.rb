@@ -1,6 +1,6 @@
 class TeamsController < ApplicationController
   before_action :authenticate_user!
-  before_action :set_team, only: %i[show edit update destroy]
+  before_action :set_team, only: %i[show edit update destroy transfer]
 
   def index
     @teams = Team.all
@@ -15,12 +15,7 @@ class TeamsController < ApplicationController
     @team = Team.new
   end
 
-  def edit
-    if current_user != @team.owner
-      flash.now[:error] = I18n.t('cannot_edit_not_admin')
-      render :show
-    end
-  end
+  def edit; end
 
   def create
     @team = Team.new(team_params)
@@ -43,6 +38,15 @@ class TeamsController < ApplicationController
     end
   end
 
+  def transfer
+    if @team.update(owner_id: params[:user])
+      TransferMailer.transfer_mail(@team.owner.email).deliver
+      redirect_to @team, notice: I18n.t('views.messages.transfer_ownership')
+    else
+      render @team
+    end
+  end
+
   def destroy
     @team.destroy
     redirect_to teams_url, notice: I18n.t('views.messages.delete_team')
@@ -52,22 +56,6 @@ class TeamsController < ApplicationController
     @team = current_user.keep_team_id ? Team.find(current_user.keep_team_id) : current_user.teams.first
   end
 
-  def owner_change
-    @team = current_user.keep_team
-    @team.update(owner_id: params[:owner_id])
-    @user = User.find(@team.owner_id)
-    TeamMailer.team_mail(@user).deliver
-    redirect_to @team, notice: I18n.t('views.messages.owner_change')
-  end
-
-  # def transfer
-  #   if @team.update(owner_id: params[:user])
-  #     TransferMailer.transfer_mail(@team.owner.email).deliver
-  #     redirect_to @team, notice: I18n.t('views.messages.transfer_ownership')
-  #   else
-  #     render @team
-  #   end
-  # end
   private
 
   def set_team

@@ -15,6 +15,7 @@ class Team < ApplicationRecord
   def invite_member(user)
     assigns.create(user: user)
   end
+
   def all_member_emails
     self.members.map(&:email)
   end
