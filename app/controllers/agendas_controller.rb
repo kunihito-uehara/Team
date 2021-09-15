@@ -21,7 +21,7 @@ class AgendasController < ApplicationController
       render :new
     end
   end
-
+  
   def destroy
     if current_user == @agenda.user || current_user == @agenda.team.owner
     @agenda.destroy

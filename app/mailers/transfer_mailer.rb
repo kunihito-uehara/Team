@@ -1,5 +1,7 @@
 class TransferMailer < ApplicationMailer
-  def transfer_mail(email)
-    mail to: email, subject: "チームリーダー変更のお知らせ"
+  default from: 'from@example.com'
+
+  def  transfer_mail(user)
+    mail to: user.email, subject: I18n.t('views.messages.owner_change')
   end
 end
