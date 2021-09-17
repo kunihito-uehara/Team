@@ -6,7 +6,7 @@ class Agenda < ApplicationRecord
 
   private
 
-  # def exec_after_destroy
-  #   self.team.deliver_agenda_destroy_mails
-  # end
+  def exec_after_destroy
+    self.team.deliver_agenda_destroy_mails
+  end
 end

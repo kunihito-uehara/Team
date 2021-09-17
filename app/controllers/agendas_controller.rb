@@ -21,10 +21,11 @@ class AgendasController < ApplicationController
       render :new
     end
   end
-  
+
   def destroy
     if current_user == @agenda.user || current_user == @agenda.team.owner
-    @agenda.destroy
+      @agenda.destroy
+      AssignMailer.agenda_destroy_mail(@agenda).deliver
       redirect_to dashboard_url, notice: I18n.t('views.messages.delete_agenda')
     else
       redirect_to team_path(@agenda.team), notice: I18n.t('views.messages.cannot_delete_agenda')
