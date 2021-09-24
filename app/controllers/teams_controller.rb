@@ -1,6 +1,6 @@
 class TeamsController < ApplicationController
   before_action :authenticate_user!
-  before_action :set_team, only: %i[show edit update destroy]
+  before_action :set_team, only: %i[show edit update destroy transfer]
 
   def index
     @teams = Team.all
@@ -38,6 +38,15 @@ class TeamsController < ApplicationController
     end
   end
 
+  def transfer
+    if @team.update(owner_id: params[:user])
+      TransferMailer.transfer_mail(@team.owner.email).deliver
+      redirect_to @team, notice: I18n.t('views.messages.transfer_ownership')
+    else
+      render @team
+    end
+  end
+
   def destroy
     @team.destroy
     redirect_to teams_url, notice: I18n.t('views.messages.delete_team')
@@ -55,5 +64,13 @@ class TeamsController < ApplicationController
 
   def team_params
     params.fetch(:team, {}).permit %i[name icon icon_cache owner_id keep_team_id]
+  end
+
+  def authenticate_user
+    @team = Team.friendly.find(params[:id])
+    unless current_user.id == @team.owner_id
+    flash[:notice] = "チームリーダーではないため編集権限はありません"
+    redirect_to @team
+    end
   end
 end
